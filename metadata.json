@@ -1,0 +1,5 @@
+{
+  "name": "AluRough: Surface Scattering & Roughness Simulator",
+  "description": "An advanced visualization and analysis tool for exploring how different wavelengths interact with material roughness models, specifically calibrated for aluminum alloys like Ra 0.8µm.",
+  "requestFramePermissions": []
+}
