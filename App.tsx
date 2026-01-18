@@ -79,6 +79,33 @@ const App: React.FC = () => {
     return fullScattering.filter((_, i) => i % sampleFactor === 0);
   }, [fullScattering]);
 
+  const exportBRDF = () => {
+    const header = [
+      "# AluRough BRDF Data Export",
+      `# Material: ${params.material}`,
+      `# Ra: ${params.ra.toFixed(6)} um`,
+      `# Wavelength: ${params.wavelength.toFixed(3)} um`,
+      `# Model: ${params.modelType}`,
+      `# Reflectivity: ${params.reflectivity}`,
+      `# Slope Factor: ${params.slopeFactor}`,
+      `# Phase Factor (g): ${gValue.toExponential(4)}`,
+      `# Resolution: ${SIMULATION_STEP} deg`,
+      "Angle(deg),RelativeIntensity"
+    ].join("\n");
+
+    const rows = fullScattering.map(d => `${d.angle.toFixed(3)},${d.intensity.toFixed(8)}`);
+    const csvContent = header + "\n" + rows.join("\n");
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `BRDF_Ra${params.ra.toFixed(2)}_Wl${params.wavelength.toFixed(2)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleRaInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const valNm = parseFloat(e.target.value);
     if (!isNaN(valNm)) {
@@ -217,11 +244,19 @@ const App: React.FC = () => {
             </div>
 
             <div className="bg-slate-900/40 p-8 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden h-[450px]">
-               <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-8 flex justify-between">
-                 <span>BRDF 散射强度分布图</span>
-                 <span className="text-slate-700 font-mono text-[9px]">0.001° RES</span>
-               </h2>
-               <div className="h-[330px]">
+               <div className="flex justify-between items-start mb-8">
+                 <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                   BRDF 散射强度分布图
+                   <span className="block text-slate-700 font-mono text-[9px] mt-1">0.001° RES (180,001 POINTS)</span>
+                 </h2>
+                 <button 
+                  onClick={exportBRDF}
+                  className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                 >
+                   <span>⬇</span> 导出 BRDF 文件
+                 </button>
+               </div>
+               <div className="h-[310px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
